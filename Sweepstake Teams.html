@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Castlefield – World Cup 2026 Sweepstake</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem 3rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #1a1a1a;
+  }
+
+  header p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  .controls {
+    max-width: 960px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .controls input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    background: #fff;
+    outline: none;
+    color: #1a1a1a;
+  }
+
+  .controls input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  }
+
+  .count {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    white-space: nowrap;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px 10px 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .card:hover {
+    border-color: #a5b4fc;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.1);
+  }
+
+  .card img {
+    width: 52px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .card .team {
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.3;
+  }
+
+  .card .person {
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1.3;
+  }
+
+  .no-results {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    padding: 2rem 0;
+    grid-column: 1 / -1;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-size: 0.75rem;
+    color: #d1d5db;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>World Cup 2026 Sweepstake</h1>
+  <p>Castlefield Investment Management</p>
+</header>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search by name or team..." oninput="filter()">
+  <span class="count" id="count">48 entries</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>Good luck everyone!</footer>
+
+<script>
+const entries = [
+  { team: "Algeria",              person: "Summayya Mosam",         code: "dz" },
+  { team: "Argentina",            person: "Joe Kelly",              code: "ar" },
+  { team: "Australia",            person: "Kathryn Holland",        code: "au" },
+  { team: "Austria",              person: "David Elton",            code: "at" },
+  { team: "Belgium",              person: "Ffion Spencer",          code: "be" },
+  { team: "Bosnia & Herzegovina", person: "James Buckley",          code: "ba" },
+  { team: "Brazil",               person: "Michael Owens",          code: "br" },
+  { team: "Canada",               person: "Karen Brown",            code: "ca" },
+  { team: "Cape Verde",           person: "Ewelina Niziolek-Wilson",code: "cv" },
+  { team: "Colombia",             person: "Matt Ralph",             code: "co" },
+  { team: "Croatia",              person: "Catherine Player",       code: "hr" },
+  { team: "Curacao",              person: "Ewelina Niziolek-Wilson",code: "cw" },
+  { team: "Czech Republic",       person: "Matt Ralph",             code: "cz" },
+  { team: "DR Congo",             person: "Olivia Bowen",           code: "cd" },
+  { team: "Ecuador",              person: "Reece Smith",            code: "ec" },
+  { team: "Egypt",                person: "Nyle Yates",             code: "eg" },
+  { team: "England",              person: "Kamen Downham",          code: "gb-eng" },
+  { team: "France",               person: "Deborah Warrender",      code: "fr" },
+  { team: "Germany",              person: "Catherine Player",       code: "de" },
+  { team: "Ghana",                person: "Michael Richardson",     code: "gh" },
+  { team: "Haiti",                person: "David Gorman",           code: "ht" },
+  { team: "Iran",                 person: "Adam Thompson",          code: "ir" },
+  { team: "Iraq",                 person: "Olivia Bowen",           code: "iq" },
+  { team: "Ivory Coast",          person: "Julie McLoughlin",       code: "ci" },
+  { team: "Japan",                person: "Thomas McCoy",           code: "jp" },
+  { team: "Jordan",               person: "David Gorman",           code: "jo" },
+  { team: "Mexico",               person: "Julie McLoughlin",       code: "mx" },
+  { team: "Morocco",              person: "Rioghna Gannon",         code: "ma" },
+  { team: "Netherlands",          person: "Daniel Lonsdale",        code: "nl" },
+  { team: "New Zealand",          person: "Nathan Cameron",         code: "nz" },
+  { team: "Norway",               person: "Olivia Bowen",           code: "no" },
+  { team: "Panama",               person: "Barney Timson",          code: "pa" },
+  { team: "Paraguay",             person: "Deborah Warrender",      code: "py" },
+  { team: "Portugal",             person: "Bronwyn Riley",          code: "pt" },
+  { team: "Qatar",                person: "Olivia Bowen",           code: "qa" },
+  { team: "Saudi Arabia",         person: "Summayya Mosam",         code: "sa" },
+  { team: "Scotland",             person: "Kamen Downham",          code: "gb-sct" },
+  { team: "Senegal",              person: "James Buckley",          code: "sn" },
+  { team: "South Africa",         person: "Olivia Shields",         code: "za" },
+  { team: "South Korea",          person: "Joshua Lovessun",        code: "kr" },
+  { team: "Spain",                person: "Nyle Yates",             code: "es" },
+  { team: "Sweden",               person: "Michael Richardson",     code: "se" },
+  { team: "Switzerland",          person: "Amanda Blan",            code: "ch" },
+  { team: "Tunisia",              person: "Mark Elliott",           code: "tn" },
+  { team: "Turkey",               person: "Thomas McCoy",           code: "tr" },
+  { team: "United States",        person: "David Gorman",           code: "us" },
+  { team: "Uruguay",              person: "Reece Smith",            code: "uy" },
+  { team: "Uzbekistan",           person: "Barney Timson",          code: "uz" },
+];
+
+const grid = document.getElementById('grid');
+const countEl = document.getElementById('count');
+
+function flagUrl(code) {
+  return `https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3/${code}.svg`;
+}
+
+function render(list) {
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="no-results">No results found</div>';
+  } else {
+    grid.innerHTML = list.map(e => `
+      <div class="card">
+        <img src="${flagUrl(e.code)}" alt="${e.team} flag">
+        <div class="team">${e.team}</div>
+        <div class="person">${e.person}</div>
+      </div>
+    `).join('');
+  }
+  countEl.textContent = list.length === entries.length
+    ? `${entries.length} entries`
+    : `${list.length} of ${entries.length}`;
+}
+
+function filter() {
+  const q = document.getElementById('search').value.toLowerCase();
+  render(entries.filter(e =>
+    e.team.toLowerCase().includes(q) || e.person.toLowerCase().includes(q)
+  ));
+}
+
+render(entries);
+</script>
+</body>
+</html>

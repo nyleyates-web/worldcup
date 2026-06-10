@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Castlefield – World Cup 2026 Predictions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem 3rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; }
+  header p { font-size: 0.875rem; color: #6b7280; margin-top: 4px; }
+
+  .tabs-outer {
+    max-width: 960px;
+    margin: 0 auto 1.25rem;
+  }
+  .tabs-wrap {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tabs-divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 8px 0;
+  }
+
+  .tab {
+    padding: 7px 15px;
+    border-radius: 99px;
+    border: 1px solid #d1d5db;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #6b7280;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .tab:hover:not(.active) { background: #f3f4f6; color: #374151; }
+  .tab.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+  .tab.summary-tab { border-color: #6366f1; color: #4338ca; }
+  .tab.summary-tab.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+  .panel { display: none; max-width: 960px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* --- SUMMARY PANEL --- */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .summary-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .summary-card .s-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .summary-card .s-winner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .summary-card .s-winner img {
+    width: 28px; height: 19px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .summary-card .s-winner-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.2;
+  }
+  .summary-card .s-pct {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .summary-card .s-others {
+    margin-top: 8px;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .summary-card .s-other {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  .summary-card .s-other img {
+    width: 20px; height: 13px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .bar-wrap { margin-top: 6px; background: #f3f4f6; border-radius: 99px; height: 4px; }
+  .bar-fill { height: 4px; border-radius: 99px; background: #6366f1; }
+
+  .goals-scale-wrap {
+    max-width: 960px;
+    margin: 1.25rem auto 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .goals-scale-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    margin-bottom: 10px;
+  }
+  .goals-track {
+    position: relative;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 99px;
+    margin-bottom: 6px;
+  }
+  .goals-track-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: linear-gradient(to right, #a5b4fc, #6366f1);
+    border-radius: 99px;
+  }
+  .goals-dot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #6366f1;
+    border: 2px solid #fff;
+    cursor: default;
+  }
+  .goals-dot:hover .goals-tooltip { display: block; }
+  .goals-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .goals-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  .goals-avg {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 8px;
+  }
+  .goals-avg span { font-weight: 600; color: #374151; }
+  .pred-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+  }
+  .pred-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .pred-card .p-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .pred-card .p-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    line-height: 1.3;
+  }
+  .pred-card .p-value img {
+    width: 28px; height: 19px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .pred-card.plain .p-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-size: 0.75rem;
+    color: #d1d5db;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>World Cup 2026 Predictions</h1>
+  <p>Castlefield — 30 entries</p>
+</header>
+
+<div class="tabs-outer">
+  <div class="tabs-wrap" id="tabs-summary"></div>
+  <hr class="tabs-divider">
+  <div class="tabs-wrap" id="tabs-people"></div>
+</div>
+<div id="panels"></div>
+
+<footer>Good luck everyone!</footer>
+
+<script>
+function flag(code) {
+  return `https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3/${code}.svg`;
+}
+
+const PLAYER_FLAGS = {
+  "kylian mbappé": "fr", "kylian mbappe": "fr",
+  "harry kane": "gb-eng",
+  "erling haaland": "no",
+  "michael olise": "fr",
+  "ousmane dembele": "fr", "ousmane dembélé": "fr", "dembélé": "fr",
+  "lamine yamal": "es",
+  "bruno fernandes": "pt",
+  "rodri": "es",
+  "vinícius jr.": "br", "vinicius jr": "br", "vinícius jr": "br",
+  "julián alvarez": "ar", "julian alvarez": "ar",
+  "lionel messi": "ar",
+  "christiano ronaldo": "pt", "cristiano ronaldo": "pt",
+  "cody gakpo": "nl",
+  "vitinha": "pt",
+  "joao neves": "pt", "joão neves": "pt",
+  "arda güler": "tr", "arda guler": "tr",
+  "désiré doué": "fr", "desire doue": "fr", "désiré doue": "fr",
+  "endrick felipe": "br", "endrick": "br",
+  "yan diomande": "ci",
+  "jordan pickford": "gb-eng",
+  "manuel neuer": "de",
+  "alisson": "br",
+  "diogo costa": "pt",
+  "emiliano martinez": "ar", "emiliano martínez": "ar",
+  "mike maignan": "fr",
+  "thibaut courtois": "be",
+  "unai simón": "es", "unai simon": "es",
+  "yassine bounou": "ma",
+  "david raya": "es",
+  "warren zaïre-emery": "fr", "warren zaire-emery": "fr",
+  "antonio nusa": "no",
+};
+
+const COUNTRY_FLAGS = {
+  "england": "gb-eng", "france": "fr", "spain": "es", "brazil": "br",
+  "portugal": "pt", "argentina": "ar", "germany": "de", "netherlands": "nl",
+  "norway": "no", "morocco": "ma", "japan": "jp", "usa": "us",
+  "united states": "us", "turkey": "tr", "uruguay": "uy", "belgium": "be",
+  "scotland": "gb-sct", "mexico": "mx", "ecuador": "ec", "iran": "ir",
+  "colombia": "co", "south korea": "kr", "ghana": "gh", "egypt": "eg",
+  "ivory coast": "ci", "paraguay": "py", "sweden": "se", "nigeria": "ng",
+  "senegal": "sn", "croatia": "hr", "australia": "au", "switzerland": "ch",
+};
+
+function getFlag(value, isCountry) {
+  const key = value.trim().toLowerCase();
+  if (isCountry) return COUNTRY_FLAGS[key] || null;
+  return PLAYER_FLAGS[key] || null;
+}
+
+const people = [
+  { name: "Adam Thompson",          winner: "France",       runnerup: "Spain",     boot: "Kylian Mbappé",     glove: "Mike Maignan",       ball: "Michael Olise",         young: "Lamine Yamal",         goals: "261", shock: "England",      dark: "Norway",       score: "1-1" },
+  { name: "Amanda Blan",            winner: "England",      runnerup: "France",    boot: "Kylian Mbappé",     glove: "Jordan Pickford",    ball: "Harry Kane",            young: "Lamine Yamal",         goals: "385", shock: "Spain",        dark: "Scotland",     score: "3-2" },
+  { name: "Barney Timson",          winner: "Portugal",     runnerup: "France",    boot: "Harry Kane",        glove: "Alisson",            ball: "Vitinha",               young: "Yan Diomande",         goals: "310", shock: "Netherlands",  dark: "Ivory Coast",  score: "3-2" },
+  { name: "Bronwyn Riley",          winner: "England",      runnerup: "France",    boot: "Harry Kane",        glove: "Jordan Pickford",    ball: "Rodri",                 young: "Lamine Yamal",         goals: "247", shock: "Brazil",       dark: "Norway",       score: "4-1" },
+  { name: "Catherine Player",       winner: "France",       runnerup: "England",   boot: "Kylian Mbappé",     glove: "Jordan Pickford",    ball: "Ousmane Dembele",       young: "Lamine Yamal",         goals: "138", shock: "Argentina",    dark: "South Korea",  score: "4-3" },
+  { name: "Daniel Lonsdale",        winner: "France",       runnerup: "Argentina", boot: "Kylian Mbappé",     glove: "Emiliano Martinez",  ball: "Lamine Yamal",          young: "Lamine Yamal",         goals: "333", shock: "Germany",      dark: "Iran",         score: "3-1" },
+  { name: "David Elton",            winner: "France",       runnerup: "Argentina", boot: "Harry Kane",        glove: "Emiliano Martinez",  ball: "Julián Alvarez",        young: "Lamine Yamal",         goals: "325", shock: "Belgium",      dark: "Turkey",       score: "2-0" },
+  { name: "David Gorman",           winner: "England",      runnerup: "Argentina", boot: "Harry Kane",        glove: "Jordan Pickford",    ball: "Kylian Mbappé",         young: "Lamine Yamal",         goals: "230", shock: "Germany",      dark: "Norway",       score: "2-0" },
+  { name: "Deborah Warrender",      winner: "Spain",        runnerup: "England",   boot: "Kylian Mbappé",     glove: "Emiliano Martinez",  ball: "Lionel Messi",          young: "Désiré Doué",          goals: "132", shock: "USA",          dark: "Japan",        score: "3-1" },
+  { name: "Ewelina Niziolek-Wilson",winner: "France",       runnerup: "England",   boot: "Harry Kane",        glove: "Manuel Neuer",       ball: "Vinícius Jr.",          young: "Lamine Yamal",         goals: "303", shock: "Brazil",       dark: "Norway",       score: "2-1" },
+  { name: "Ffion Spencer",          winner: "Brazil",       runnerup: "Portugal",  boot: "Harry Kane",        glove: "Diogo Costa",        ball: "Bruno Fernandes",       young: "Lamine Yamal",         goals: "330", shock: "Belgium",      dark: "Norway",       score: "2-1" },
+  { name: "James Buckley",          winner: "France",       runnerup: "Spain",     boot: "Harry Kane",        glove: "Mike Maignan",       ball: "Kylian Mbappé",         young: "Désiré Doué",          goals: "249", shock: "Netherlands",  dark: "USA",          score: "1-1" },
+  { name: "Joe Kelly",              winner: "France",       runnerup: "Portugal",  boot: "Michael Olise",     glove: "Mike Maignan",       ball: "Michael Olise",         young: "Joao Neves",           goals: "260", shock: "Netherlands",  dark: "Japan",        score: "3-1" },
+  { name: "Joshua Lovessun",        winner: "Spain",        runnerup: "Germany",   boot: "Harry Kane",        glove: "Emiliano Martinez",  ball: "Christiano Ronaldo",    young: "Lamine Yamal",         goals: "126", shock: "France",       dark: "Ghana",        score: "2-1" },
+  { name: "Julie McLoughlin",       winner: "Belgium",      runnerup: "France",    boot: "Erling Haaland",    glove: "Manuel Neuer",       ball: "Ousmane Dembele",       young: "Antonio Nusa",         goals: "346", shock: "Argentina",    dark: "Norway",       score: "3-2" },
+  { name: "Kamen Downham",          winner: "France",       runnerup: "Spain",     boot: "Kylian Mbappé",     glove: "Jordan Pickford",    ball: "Michael Olise",         young: "Lamine Yamal",         goals: "297", shock: "Argentina",    dark: "Norway",       score: "2-1" },
+  { name: "Karen Brown",            winner: "Brazil",       runnerup: "Portugal",  boot: "Harry Kane",        glove: "Ederson",            ball: "Bruno Fernandes",       young: "Lamine Yamal",         goals: "103", shock: "England",      dark: "Morocco",      score: "2-1" },
+  { name: "Kathryn Holland",        winner: "Netherlands",  runnerup: "Portugal",  boot: "Kylian Mbappé",     glove: "Unai Simón",         ball: "Michael Olise",         young: "Lamine Yamal",         goals: "186", shock: "Brazil",       dark: "Japan",        score: "3-1" },
+  { name: "Mark Elliott",           winner: "France",       runnerup: "England",   boot: "Ousmane Dembele",   glove: "Thibaut Courtois",   ball: "Michael Olise",         young: "Lamine Yamal",         goals: "215", shock: "Netherlands",  dark: "Paraguay",     score: "2-1" },
+  { name: "Matt Ralph",             winner: "Spain",        runnerup: "England",   boot: "Harry Kane",        glove: "Unai Simón",         ball: "Lamine Yamal",          young: "Désiré Doué",          goals: "312", shock: "Argentina",    dark: "Norway",       score: "2-0" },
+  { name: "Michael Owens",          winner: "France",       runnerup: "Brazil",    boot: "Michael Olise",     glove: "David Raya",         ball: "Michael Olise",         young: "Lamine Yamal",         goals: "295", shock: "Germany",      dark: "Morocco",      score: "2-1" },
+  { name: "Michael Richardson",     winner: "Spain",        runnerup: "England",   boot: "Harry Kane",        glove: "Mike Maignan",       ball: "Lionel Messi",          young: "Lamine Yamal",         goals: "198", shock: "Portugal",     dark: "Mexico",       score: "2-1" },
+  { name: "Nathan Cameron",         winner: "Spain",        runnerup: "Portugal",  boot: "Kylian Mbappé",     glove: "Mike Maignan",       ball: "Bruno Fernandes",       young: "Endrick Felipe",       goals: "215", shock: "England",      dark: "Egypt",        score: "1-0" },
+  { name: "Nyle Yates",             winner: "Netherlands",  runnerup: "Spain",     boot: "Harry Kane",        glove: "Yassine Bounou",     ball: "Cody Gakpo",            young: "Lamine Yamal",         goals: "254", shock: "Brazil",       dark: "Morocco",      score: "Netherlands 2-1 Spain" },
+  { name: "Olivia Bowen",           winner: "Portugal",     runnerup: "England",   boot: "Harry Kane",        glove: "Diogo Costa",        ball: "Kylian Mbappé",         young: "Lamine Yamal",         goals: "199", shock: "Germany",      dark: "Uruguay",      score: "2-1" },
+  { name: "Olivia Shields",         winner: "Spain",        runnerup: "France",    boot: "Kylian Mbappé",     glove: "Mike Maignan",       ball: "Lamine Yamal",          young: "Lamine Yamal",         goals: "300", shock: "Brazil",       dark: "Portugal",     score: "2-1" },
+  { name: "Reece Smith",            winner: "France",       runnerup: "Portugal",  boot: "Kylian Mbappé",     glove: "Diogo Costa",        ball: "Michael Olise",         young: "Arda Güler",           goals: "303", shock: "Netherlands",  dark: "Ecuador",      score: "2-1" },
+  { name: "Rioghna Gannon",         winner: "France",       runnerup: "Spain",     boot: "Kylian Mbappé",     glove: "Jordan Pickford",    ball: "Dembélé",               young: "Lamine Yamal",         goals: "326", shock: "Germany",      dark: "Colombia",     score: "2-1" },
+  { name: "Summayya Mosam",         winner: "Spain",        runnerup: "France",    boot: "Kylian Mbappé",     glove: "Mike Maignan",       ball: "Kylian Mbappé",         young: "Lamine Yamal",         goals: "184", shock: "Brazil",       dark: "Japan",        score: "Spain 2-1 France" },
+  { name: "Thomas McCoy",           winner: "Brazil",       runnerup: "France",    boot: "Kylian Mbappé",     glove: "Alisson",            ball: "Christiano Ronaldo",    young: "Lamine Yamal",         goals: "280", shock: "United States",dark: "Turkey",       score: "3-2" },
+];
+
+const QUESTIONS = [
+  { key: "winner",   label: "Winner",           isCountry: true },
+  { key: "runnerup", label: "Runner-up",         isCountry: true },
+  { key: "boot",     label: "Golden boot",       isCountry: false },
+  { key: "glove",    label: "Golden glove",      isCountry: false },
+  { key: "ball",     label: "Golden ball",       isCountry: false },
+  { key: "young",    label: "Young player",      isCountry: false },
+  { key: "goals",    label: "Total goals",       isCountry: null },
+  { key: "shock",    label: "Shock early exit",  isCountry: true },
+  { key: "dark",     label: "Dark horse",        isCountry: true },
+  { key: "score",    label: "Correct final score", isCountry: null },
+];
+
+const SUMMARY_QUESTIONS = QUESTIONS.filter(q => q.isCountry !== null && q.key !== "goals" && q.key !== "score");
+
+function tally(key, isCountry) {
+  const counts = {};
+  people.forEach(p => {
+    const val = p[key].trim().toLowerCase().replace(/\s+/g, ' ');
+    counts[val] = (counts[val] || 0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  return sorted.map(([val, count]) => {
+    const original = people.find(p => p[key].trim().toLowerCase().replace(/\s+/g,' ') === val)[key].trim();
+    return { val: original, count, pct: Math.round(count / people.length * 100) };
+  });
+}
+
+function buildSummaryPanel() {
+  const div = document.createElement('div');
+  div.className = 'panel';
+  div.id = 'panel-summary';
+
+  const grid = document.createElement('div');
+  grid.className = 'summary-grid';
+
+  SUMMARY_QUESTIONS.forEach(q => {
+    const results = tally(q.key, q.isCountry);
+    const top = results[0];
+    const rest = results.slice(1, 4);
+
+    const topFlag = getFlag(top.val, q.isCountry);
+    const card = document.createElement('div');
+    card.className = 'summary-card';
+    card.innerHTML = `
+      <div class="s-label">${q.label}</div>
+      <div class="s-winner">
+        ${topFlag ? `<img src="${flag(topFlag)}" alt="">` : ''}
+        <div>
+          <div class="s-winner-name">${top.val}</div>
+          <div class="s-pct">${top.count} vote${top.count>1?'s':''} &middot; ${top.pct}%</div>
+        </div>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${top.pct}%"></div></div>
+      ${rest.length ? `<div class="s-others">${rest.map(r => {
+        const rf = getFlag(r.val, q.isCountry);
+        return `<div class="s-other">${rf ? `<img src="${flag(rf)}" alt="">` : ''}<span>${r.val} &middot; ${r.count}</span></div>`;
+      }).join('')}</div>` : ''}
+    `;
+    grid.appendChild(card);
+  });
+
+  div.appendChild(grid);
+  return div;
+}
+
+function buildPersonPanel(person, idx) {
+  const div = document.createElement('div');
+  div.className = 'panel';
+  div.id = `panel-${idx}`;
+
+  const grid = document.createElement('div');
+  grid.className = 'pred-grid';
+
+  QUESTIONS.forEach(q => {
+    const card = document.createElement('div');
+    const val = person[q.key];
+    const isPlain = q.isCountry === null;
+    card.className = 'pred-card' + (isPlain ? ' plain' : '');
+    const flagCode = isPlain ? null : getFlag(val, q.isCountry);
+    card.innerHTML = `
+      <div class="p-label">${q.label}</div>
+      <div class="p-value">
+        ${flagCode ? `<img src="${flag(flagCode)}" alt="">` : ''}
+        <span>${val}</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  div.appendChild(grid);
+  return div;
+}
+
+function buildGoalsScale() {
+  const vals = people.map(p => parseInt(p.goals)).filter(n => !isNaN(n));
+  const avg = Math.round(vals.reduce((a,b) => a+b, 0) / vals.length);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'goals-scale-wrap';
+  wrap.innerHTML = `<div class="goals-scale-label">Total goals — all predictions</div>
+    <div class="goals-track" id="goals-track">
+      <div class="goals-track-fill" style="width:100%"></div>
+    </div>
+    <div class="goals-axis">
+      <span>0</span><span>100</span><span>200</span><span>300</span><span>400</span>
+    </div>
+    <div class="goals-avg">Average prediction: <span>${avg} goals</span> &nbsp;·&nbsp; Range: <span>${min}–${max}</span></div>`;
+
+  setTimeout(() => {
+    const track = document.getElementById('goals-track');
+    if (!track) return;
+    const trackW = track.offsetWidth;
+    people.forEach(p => {
+      const n = parseInt(p.goals);
+      if (isNaN(n)) return;
+      const dot = document.createElement('div');
+      dot.className = 'goals-dot';
+      dot.style.left = (n / 400 * 100) + '%';
+      const tip = document.createElement('div');
+      tip.className = 'goals-tooltip';
+      tip.textContent = p.name.split(' ')[0] + ': ' + n;
+      dot.appendChild(tip);
+      track.appendChild(dot);
+    });
+    const avgDot = document.createElement('div');
+    avgDot.className = 'goals-dot';
+    avgDot.style.left = (avg / 400 * 100) + '%';
+    avgDot.style.background = '#f59e0b';
+    avgDot.style.width = '10px';
+    avgDot.style.height = '10px';
+    const avgTip = document.createElement('div');
+    avgTip.className = 'goals-tooltip';
+    avgTip.textContent = 'Avg: ' + avg;
+    avgDot.appendChild(avgTip);
+    track.appendChild(avgDot);
+  }, 50);
+
+  return wrap;
+}
+
+const summaryTabsEl = document.getElementById('tabs-summary');
+const peopleTabsEl = document.getElementById('tabs-people');
+const panelsEl = document.getElementById('panels');
+
+function setActive(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+// Work out which first names are duplicated
+const firstNameCounts = {};
+people.forEach(p => {
+  const fn = p.name.split(' ')[0];
+  firstNameCounts[fn] = (firstNameCounts[fn] || 0) + 1;
+});
+
+function tabLabel(name) {
+  const parts = name.split(' ');
+  const first = parts[0];
+  if (firstNameCounts[first] > 1) {
+    return first + ' ' + parts[parts.length - 1][0];
+  }
+  return first;
+}
+
+// Summary tab
+const summaryTab = document.createElement('div');
+summaryTab.className = 'tab summary-tab active';
+summaryTab.id = 'tab-summary';
+summaryTab.textContent = 'Summary';
+summaryTab.onclick = () => setActive('summary');
+summaryTabsEl.appendChild(summaryTab);
+
+const summaryPanel = buildSummaryPanel();
+summaryPanel.classList.add('active');
+panelsEl.appendChild(summaryPanel);
+summaryPanel.appendChild(buildGoalsScale());
+
+// Person tabs
+people.forEach((person, i) => {
+  const tab = document.createElement('div');
+  tab.className = 'tab';
+  tab.id = `tab-${i}`;
+  tab.textContent = tabLabel(person.name);
+  tab.onclick = () => setActive(i);
+  peopleTabsEl.appendChild(tab);
+  panelsEl.appendChild(buildPersonPanel(person, i));
+});
+</script>
+</body>
+</html>
