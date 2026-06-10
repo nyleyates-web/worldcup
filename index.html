@@ -57,6 +57,27 @@
     box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
   }
 
+  .filter-btns {
+    display: flex;
+    gap: 6px;
+    max-width: 960px;
+    margin: 0 auto 1rem;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 1px solid #d1d5db;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #6b7280;
+    transition: all 0.12s;
+  }
+  .filter-btn:hover { background: #f3f4f6; }
+  .filter-btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+
   .count {
     font-size: 0.8rem;
     color: #9ca3af;
@@ -82,9 +103,10 @@
     gap: 7px;
     text-align: center;
     transition: border-color 0.15s, box-shadow 0.15s;
+    position: relative;
   }
 
-  .card:hover {
+  .card:not(.eliminated):hover {
     border-color: #a5b4fc;
     box-shadow: 0 2px 8px rgba(99,102,241,0.1);
   }
@@ -95,6 +117,7 @@
     object-fit: cover;
     border-radius: 5px;
     border: 1px solid #e5e7eb;
+    transition: filter 0.2s;
   }
 
   .card .team {
@@ -108,6 +131,39 @@
     font-size: 11px;
     color: #6b7280;
     line-height: 1.3;
+  }
+
+  .card.eliminated {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+    opacity: 0.55;
+  }
+
+  .card.eliminated img {
+    filter: grayscale(100%);
+  }
+
+  .card.eliminated .team {
+    color: #9ca3af;
+  }
+
+  .eliminated-badge {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+
+  .card.eliminated .eliminated-badge {
+    display: block;
   }
 
   .no-results {
@@ -130,12 +186,18 @@
 
 <header>
   <h1>World Cup 2026 Sweepstake</h1>
-  <p>Castlefield Investment Management</p>
+  <p>Castlefield</p>
 </header>
 
 <div class="controls">
-  <input type="text" id="search" placeholder="Search by name or team..." oninput="filter()">
+  <input type="text" id="search" placeholder="Search by name or team..." oninput="applyFilters()">
   <span class="count" id="count">48 entries</span>
+</div>
+
+<div class="filter-btns">
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All teams</button>
+  <button class="filter-btn" data-filter="active" onclick="setFilter('active')">Still in</button>
+  <button class="filter-btn" data-filter="eliminated" onclick="setFilter('eliminated')">Eliminated</button>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -144,88 +206,115 @@
 
 <script>
 const entries = [
-  { team: "Algeria",              person: "Summayya Mosam",         code: "dz" },
-  { team: "Argentina",            person: "Joe Kelly",              code: "ar" },
-  { team: "Australia",            person: "Kathryn Holland",        code: "au" },
-  { team: "Austria",              person: "David Elton",            code: "at" },
-  { team: "Belgium",              person: "Ffion Spencer",          code: "be" },
-  { team: "Bosnia & Herzegovina", person: "James Buckley",          code: "ba" },
-  { team: "Brazil",               person: "Michael Owens",          code: "br" },
-  { team: "Canada",               person: "Karen Brown",            code: "ca" },
-  { team: "Cape Verde",           person: "Ewelina Niziolek-Wilson",code: "cv" },
-  { team: "Colombia",             person: "Matt Ralph",             code: "co" },
-  { team: "Croatia",              person: "Catherine Player",       code: "hr" },
-  { team: "Curacao",              person: "Ewelina Niziolek-Wilson",code: "cw" },
-  { team: "Czech Republic",       person: "Matt Ralph",             code: "cz" },
-  { team: "DR Congo",             person: "Olivia Bowen",           code: "cd" },
-  { team: "Ecuador",              person: "Reece Smith",            code: "ec" },
-  { team: "Egypt",                person: "Nyle Yates",             code: "eg" },
-  { team: "England",              person: "Kamen Downham",          code: "gb-eng" },
-  { team: "France",               person: "Deborah Warrender",      code: "fr" },
-  { team: "Germany",              person: "Catherine Player",       code: "de" },
-  { team: "Ghana",                person: "Michael Richardson",     code: "gh" },
-  { team: "Haiti",                person: "David Gorman",           code: "ht" },
-  { team: "Iran",                 person: "Adam Thompson",          code: "ir" },
-  { team: "Iraq",                 person: "Olivia Bowen",           code: "iq" },
-  { team: "Ivory Coast",          person: "Julie McLoughlin",       code: "ci" },
-  { team: "Japan",                person: "Thomas McCoy",           code: "jp" },
-  { team: "Jordan",               person: "David Gorman",           code: "jo" },
-  { team: "Mexico",               person: "Julie McLoughlin",       code: "mx" },
-  { team: "Morocco",              person: "Rioghna Gannon",         code: "ma" },
-  { team: "Netherlands",          person: "Daniel Lonsdale",        code: "nl" },
-  { team: "New Zealand",          person: "Nathan Cameron",         code: "nz" },
-  { team: "Norway",               person: "Olivia Bowen",           code: "no" },
-  { team: "Panama",               person: "Barney Timson",          code: "pa" },
-  { team: "Paraguay",             person: "Deborah Warrender",      code: "py" },
-  { team: "Portugal",             person: "Bronwyn Riley",          code: "pt" },
-  { team: "Qatar",                person: "Olivia Bowen",           code: "qa" },
-  { team: "Saudi Arabia",         person: "Summayya Mosam",         code: "sa" },
-  { team: "Scotland",             person: "Kamen Downham",          code: "gb-sct" },
-  { team: "Senegal",              person: "James Buckley",          code: "sn" },
-  { team: "South Africa",         person: "Olivia Shields",         code: "za" },
-  { team: "South Korea",          person: "Joshua Lovessun",        code: "kr" },
-  { team: "Spain",                person: "Nyle Yates",             code: "es" },
-  { team: "Sweden",               person: "Michael Richardson",     code: "se" },
-  { team: "Switzerland",          person: "Amanda Blan",            code: "ch" },
-  { team: "Tunisia",              person: "Mark Elliott",           code: "tn" },
-  { team: "Turkey",               person: "Thomas McCoy",           code: "tr" },
-  { team: "United States",        person: "David Gorman",           code: "us" },
-  { team: "Uruguay",              person: "Reece Smith",            code: "uy" },
-  { team: "Uzbekistan",           person: "Barney Timson",          code: "uz" },
+  { team: "Algeria",              person: "Summayya Mosam",          code: "dz" },
+  { team: "Argentina",            person: "Joe Kelly",               code: "ar" },
+  { team: "Australia",            person: "Kathryn Holland",         code: "au" },
+  { team: "Austria",              person: "David Elton",             code: "at" },
+  { team: "Belgium",              person: "Ffion Spencer",           code: "be" },
+  { team: "Bosnia & Herzegovina", person: "James Buckley",           code: "ba" },
+  { team: "Brazil",               person: "Michael Owens",           code: "br" },
+  { team: "Canada",               person: "Karen Brown",             code: "ca" },
+  { team: "Cape Verde",           person: "Ewelina Niziolek-Wilson", code: "cv" },
+  { team: "Colombia",             person: "Matt Ralph",              code: "co" },
+  { team: "Croatia",              person: "Catherine Player",        code: "hr" },
+  { team: "Curacao",              person: "Ewelina Niziolek-Wilson", code: "cw" },
+  { team: "Czech Republic",       person: "Matt Ralph",              code: "cz" },
+  { team: "DR Congo",             person: "Olivia Bowen",            code: "cd" },
+  { team: "Ecuador",              person: "Reece Smith",             code: "ec" },
+  { team: "Egypt",                person: "Nyle Yates",              code: "eg" },
+  { team: "England",              person: "Kamen Downham",           code: "gb-eng" },
+  { team: "France",               person: "Deborah Warrender",       code: "fr" },
+  { team: "Germany",              person: "Catherine Player",        code: "de" },
+  { team: "Ghana",                person: "Michael Richardson",      code: "gh" },
+  { team: "Haiti",                person: "David Gorman",            code: "ht" },
+  { team: "Iran",                 person: "Adam Thompson",           code: "ir" },
+  { team: "Iraq",                 person: "Olivia Bowen",            code: "iq" },
+  { team: "Ivory Coast",          person: "Julie McLoughlin",        code: "ci" },
+  { team: "Japan",                person: "Thomas McCoy",            code: "jp" },
+  { team: "Jordan",               person: "David Gorman",            code: "jo" },
+  { team: "Mexico",               person: "Julie McLoughlin",        code: "mx" },
+  { team: "Morocco",              person: "Rioghna Gannon",          code: "ma" },
+  { team: "Netherlands",          person: "Daniel Lonsdale",         code: "nl" },
+  { team: "New Zealand",          person: "Nathan Cameron",          code: "nz" },
+  { team: "Norway",               person: "Olivia Bowen",            code: "no" },
+  { team: "Panama",               person: "Barney Timson",           code: "pa" },
+  { team: "Paraguay",             person: "Deborah Warrender",       code: "py" },
+  { team: "Portugal",             person: "Bronwyn Riley",           code: "pt" },
+  { team: "Qatar",                person: "Olivia Bowen",            code: "qa" },
+  { team: "Saudi Arabia",         person: "Summayya Mosam",          code: "sa" },
+  { team: "Scotland",             person: "Kamen Downham",           code: "gb-sct" },
+  { team: "Senegal",              person: "James Buckley",           code: "sn" },
+  { team: "South Africa",         person: "Olivia Shields",          code: "za" },
+  { team: "South Korea",          person: "Joshua Lovessun",         code: "kr" },
+  { team: "Spain",                person: "Nyle Yates",              code: "es" },
+  { team: "Sweden",               person: "Michael Richardson",      code: "se" },
+  { team: "Switzerland",          person: "Amanda Blan",             code: "ch" },
+  { team: "Tunisia",              person: "Mark Elliott",            code: "tn" },
+  { team: "Turkey",               person: "Thomas McCoy",            code: "tr" },
+  { team: "United States",        person: "David Gorman",            code: "us" },
+  { team: "Uruguay",              person: "Reece Smith",             code: "uy" },
+  { team: "Uzbekistan",           person: "Barney Timson",           code: "uz" },
 ];
-
-const grid = document.getElementById('grid');
-const countEl = document.getElementById('count');
 
 function flagUrl(code) {
   return `https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3/${code}.svg`;
 }
 
-function render(list) {
+let knockedOut = [];
+let currentFilter = 'all';
+let currentSearch = '';
+
+const grid = document.getElementById('grid');
+const countEl = document.getElementById('count');
+
+fetch('knocked-out.json?nocache=' + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    knockedOut = (data.knocked_out || []).map(t => t.toLowerCase());
+    applyFilters();
+  })
+  .catch(() => {
+    applyFilters();
+  });
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === f);
+  });
+  applyFilters();
+}
+
+function applyFilters() {
+  currentSearch = document.getElementById('search').value.toLowerCase();
+  let list = entries.filter(e => {
+    const matchesSearch = e.team.toLowerCase().includes(currentSearch) || e.person.toLowerCase().includes(currentSearch);
+    const isEliminated = knockedOut.includes(e.team.toLowerCase());
+    const matchesFilter = currentFilter === 'all'
+      || (currentFilter === 'active' && !isEliminated)
+      || (currentFilter === 'eliminated' && isEliminated);
+    return matchesSearch && matchesFilter;
+  });
+
   if (list.length === 0) {
     grid.innerHTML = '<div class="no-results">No results found</div>';
   } else {
-    grid.innerHTML = list.map(e => `
-      <div class="card">
-        <img src="${flagUrl(e.code)}" alt="${e.team} flag">
-        <div class="team">${e.team}</div>
-        <div class="person">${e.person}</div>
-      </div>
-    `).join('');
+    grid.innerHTML = list.map(e => {
+      const isEliminated = knockedOut.includes(e.team.toLowerCase());
+      return `
+        <div class="card${isEliminated ? ' eliminated' : ''}">
+          <span class="eliminated-badge">Out</span>
+          <img src="${flagUrl(e.code)}" alt="${e.team} flag">
+          <div class="team">${e.team}</div>
+          <div class="person">${e.person}</div>
+        </div>`;
+    }).join('');
   }
+
   countEl.textContent = list.length === entries.length
     ? `${entries.length} entries`
     : `${list.length} of ${entries.length}`;
 }
-
-function filter() {
-  const q = document.getElementById('search').value.toLowerCase();
-  render(entries.filter(e =>
-    e.team.toLowerCase().includes(q) || e.person.toLowerCase().includes(q)
-  ));
-}
-
-render(entries);
 </script>
 </body>
 </html>
