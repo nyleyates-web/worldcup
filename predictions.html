@@ -509,11 +509,15 @@ const ACTUAL_RESULTS = {
   young:    "Pau Cubarsí",     // Best Young Player — beat Lamine Yamal
   goals:    308,               // total tournament goals (excl. shootouts)
   score:    "1-0",             // Spain 1–0 Argentina (a.e.t.)
+  shock:    "Germany",         // agreed office answer for Shock Early Exit
+  dark:     "Norway",          // agreed office answer for Dark Horse
 };
 const GOALS_TOLERANCE = 10; // "within 10 either side" counts as correct
 
-// Categories that actually get scored (subjective ones excluded)
-const SCORED_KEYS = ["winner", "runnerup", "boot", "glove", "ball", "young", "goals", "score"];
+// Categories that get scored — Shock Exit and Dark Horse are subjective by
+// nature, but the office already agreed on Germany/Norway as the accepted
+// answers, so they're scored the same as every other category.
+const SCORED_KEYS = ["winner", "runnerup", "boot", "glove", "ball", "young", "goals", "shock", "dark", "score"];
 
 function isCorrect(person, key) {
   if (key === "goals") {
@@ -677,7 +681,7 @@ function buildResultsPanel() {
 
   const intro = document.createElement('div');
   intro.className = 'results-intro';
-  intro.textContent = "It's all over! Here's how the tournament actually finished, and how everyone's predictions stack up. 1 point per correct answer — Golden Boot, Golden Glove, Golden Ball, Young Player, Winner, Runner-up and Correct Score need an exact match; Total Goals counts as correct within " + GOALS_TOLERANCE + " goals either side of the real total (" + ACTUAL_RESULTS.goals + "). Shock Early Exit and Dark Horse are shown for fun but aren't scored — there's no single official right answer for those.";
+  intro.textContent = "It's all over! Here's how the tournament actually finished, and how everyone's predictions stack up. 1 point per correct answer — Winner, Runner-up, Golden Boot, Golden Glove, Golden Ball, Young Player, Shock Early Exit, Dark Horse and Correct Score all need an exact match (Shock/Dark Horse are scored against the office's agreed answers of Germany/Norway); Total Goals counts as correct within " + GOALS_TOLERANCE + " goals either side of the real total (" + ACTUAL_RESULTS.goals + ").";
   div.appendChild(intro);
 
   // --- Actual results cards ---
@@ -697,6 +701,8 @@ function buildResultsPanel() {
     { key: 'ball',     label: 'Golden ball',       isCountry: false, note: 'Beat Messi to it' },
     { key: 'young',    label: 'Young player',      isCountry: false, note: 'Beat Lamine Yamal to it' },
     { key: 'goals',    label: 'Total goals',       isCountry: null,  note: `${ACTUAL_RESULTS.goals - GOALS_TOLERANCE}–${ACTUAL_RESULTS.goals + GOALS_TOLERANCE} counted as correct` },
+    { key: 'shock',    label: 'Shock early exit',  isCountry: true,  note: 'Office-agreed answer' },
+    { key: 'dark',     label: 'Dark horse',        isCountry: true,  note: 'Office-agreed answer' },
     { key: 'score',    label: 'Correct final score', isCountry: null, note: 'Spain 1–0 Argentina' },
   ];
 
@@ -734,7 +740,8 @@ function buildResultsPanel() {
 
   const colLabels = {
     winner: 'Winner', runnerup: 'Runner-up', boot: 'Boot', glove: 'Glove',
-    ball: 'Ball', young: 'Young', goals: 'Goals', score: 'Score',
+    ball: 'Ball', young: 'Young', goals: 'Goals', shock: 'Shock', dark: 'Dark',
+    score: 'Score',
   };
 
   const thead = document.createElement('thead');
