@@ -53,6 +53,8 @@
   .tab.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
   .tab.summary-tab { border-color: #6366f1; color: #4338ca; }
   .tab.summary-tab.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+  .tab.results-tab { border-color: #059669; color: #047857; font-weight: 600; }
+  .tab.results-tab.active { background: #059669; border-color: #059669; color: #fff; }
 
   .panel { display: none; max-width: 960px; margin: 0 auto; }
   .panel.active { display: block; }
@@ -239,6 +241,126 @@
     color: #374151;
   }
 
+  /* --- RESULTS PANEL --- */
+  .results-intro {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .results-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #059669;
+    margin: 22px 0 10px;
+  }
+  .results-section-title:first-of-type { margin-top: 0; }
+
+  .actual-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+  }
+  .actual-card {
+    background: #fff;
+    border: 1px solid #d1fae5;
+    border-left: 3px solid #059669;
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .actual-card .a-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    margin-bottom: 8px;
+  }
+  .actual-card .a-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+  }
+  .actual-card .a-value img {
+    width: 28px; height: 19px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .actual-card .a-note {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  .leaderboard-wrap {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  table.leaderboard {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  table.leaderboard th, table.leaderboard td {
+    padding: 9px 10px;
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+    white-space: nowrap;
+  }
+  table.leaderboard th {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9ca3af;
+    font-weight: 600;
+    background: #fafafa;
+    position: sticky;
+    top: 0;
+  }
+  table.leaderboard tbody tr:last-child td { border-bottom: none; }
+  table.leaderboard tbody tr:hover { background: #f9fafb; }
+  table.leaderboard tbody tr.winner-row { background: #ecfdf5; }
+  table.leaderboard tbody tr.winner-row:hover { background: #d1fae5; }
+  .lb-rank {
+    font-weight: 700;
+    color: #6b7280;
+    width: 30px;
+  }
+  .lb-rank.gold { color: #b45309; }
+  .lb-name {
+    font-weight: 600;
+    color: #111827;
+  }
+  .lb-score {
+    font-weight: 700;
+    color: #059669;
+    text-align: center;
+  }
+  .lb-cell {
+    text-align: center;
+    font-size: 13px;
+  }
+  .lb-cell.hit { color: #059669; }
+  .lb-cell.miss { color: #d1d5db; }
+  .leaderboard-scroll {
+    overflow-x: auto;
+  }
+  .results-legend {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 8px;
+    padding: 0 4px;
+  }
+
   footer {
     text-align: center;
     margin-top: 2.5rem;
@@ -300,6 +422,7 @@ const PLAYER_FLAGS = {
   "david raya": "es",
   "warren zaïre-emery": "fr", "warren zaire-emery": "fr",
   "antonio nusa": "no",
+  "pau cubarsí": "es", "pau cubarsi": "es",
 };
 
 const COUNTRY_FLAGS = {
@@ -317,6 +440,10 @@ function getFlag(value, isCountry) {
   const key = value.trim().toLowerCase();
   if (isCountry) return COUNTRY_FLAGS[key] || null;
   return PLAYER_FLAGS[key] || null;
+}
+
+function norm(v) {
+  return v.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
 const people = [
@@ -366,6 +493,51 @@ const QUESTIONS = [
 ];
 
 const SUMMARY_QUESTIONS = QUESTIONS.filter(q => q.isCountry !== null && q.key !== "goals" && q.key !== "score");
+
+/* ============================================================
+   ACTUAL TOURNAMENT RESULTS
+   Note: "Shock early exit" and "Dark horse" have no single
+   official right answer (they're subjective calls), so they're
+   shown on the Results tab but excluded from the scored total.
+   ============================================================ */
+const ACTUAL_RESULTS = {
+  winner:   "Spain",
+  runnerup: "Argentina",
+  boot:     "Kylian Mbappé",   // 10 goals — outright Golden Boot
+  glove:    "Unai Simón",
+  ball:     "Rodri",           // Golden Ball — beat out Messi
+  young:    "Pau Cubarsí",     // Best Young Player — beat Lamine Yamal
+  goals:    308,               // total tournament goals (excl. shootouts)
+  score:    "1-0",             // Spain 1–0 Argentina (a.e.t.)
+};
+const GOALS_TOLERANCE = 10; // "within 10 either side" counts as correct
+
+// Categories that actually get scored (subjective ones excluded)
+const SCORED_KEYS = ["winner", "runnerup", "boot", "glove", "ball", "young", "goals", "score"];
+
+function isCorrect(person, key) {
+  if (key === "goals") {
+    const n = parseInt(person.goals);
+    if (isNaN(n)) return false;
+    return Math.abs(n - ACTUAL_RESULTS.goals) <= GOALS_TOLERANCE;
+  }
+  return norm(person[key]) === norm(ACTUAL_RESULTS[key]);
+}
+
+function scorePerson(person) {
+  const hits = {};
+  let total = 0;
+  SCORED_KEYS.forEach(key => {
+    const correct = isCorrect(person, key);
+    hits[key] = correct;
+    if (correct) total++;
+  });
+  return { total, hits };
+}
+
+const LEADERBOARD = people
+  .map(p => ({ person: p, ...scorePerson(p) }))
+  .sort((a, b) => b.total - a.total);
 
 function tally(key, isCountry) {
   const counts = {};
@@ -495,6 +667,119 @@ function buildGoalsScale() {
   return wrap;
 }
 
+/* ============================================================
+   RESULTS PANEL — actual outcomes + scored leaderboard
+   ============================================================ */
+function buildResultsPanel() {
+  const div = document.createElement('div');
+  div.className = 'panel';
+  div.id = 'panel-results';
+
+  const intro = document.createElement('div');
+  intro.className = 'results-intro';
+  intro.textContent = "It's all over! Here's how the tournament actually finished, and how everyone's predictions stack up. 1 point per correct answer — Golden Boot, Golden Glove, Golden Ball, Young Player, Winner, Runner-up and Correct Score need an exact match; Total Goals counts as correct within " + GOALS_TOLERANCE + " goals either side of the real total (" + ACTUAL_RESULTS.goals + "). Shock Early Exit and Dark Horse are shown for fun but aren't scored — there's no single official right answer for those.";
+  div.appendChild(intro);
+
+  // --- Actual results cards ---
+  const resultsTitle = document.createElement('div');
+  resultsTitle.className = 'results-section-title';
+  resultsTitle.textContent = 'Actual Results';
+  div.appendChild(resultsTitle);
+
+  const actualGrid = document.createElement('div');
+  actualGrid.className = 'actual-grid';
+
+  const ACTUAL_DISPLAY = [
+    { key: 'winner',   label: 'Winner',            isCountry: true,  note: null },
+    { key: 'runnerup', label: 'Runner-up',         isCountry: true,  note: 'Lost 1–0 (a.e.t.)' },
+    { key: 'boot',     label: 'Golden boot',       isCountry: false, note: '10 goals' },
+    { key: 'glove',    label: 'Golden glove',      isCountry: false, note: 'Conceded once all tournament' },
+    { key: 'ball',     label: 'Golden ball',       isCountry: false, note: 'Beat Messi to it' },
+    { key: 'young',    label: 'Young player',      isCountry: false, note: 'Beat Lamine Yamal to it' },
+    { key: 'goals',    label: 'Total goals',       isCountry: null,  note: `${ACTUAL_RESULTS.goals - GOALS_TOLERANCE}–${ACTUAL_RESULTS.goals + GOALS_TOLERANCE} counted as correct` },
+    { key: 'score',    label: 'Correct final score', isCountry: null, note: 'Spain 1–0 Argentina' },
+  ];
+
+  ACTUAL_DISPLAY.forEach(q => {
+    const val = String(ACTUAL_RESULTS[q.key]);
+    const flagCode = q.isCountry === null ? null : getFlag(val, q.isCountry);
+    const card = document.createElement('div');
+    card.className = 'actual-card';
+    card.innerHTML = `
+      <div class="a-label">${q.label}</div>
+      <div class="a-value">
+        ${flagCode ? `<img src="${flag(flagCode)}" alt="">` : ''}
+        <span>${val}</span>
+      </div>
+      ${q.note ? `<div class="a-note">${q.note}</div>` : ''}
+    `;
+    actualGrid.appendChild(card);
+  });
+
+  div.appendChild(actualGrid);
+
+  // --- Leaderboard ---
+  const lbTitle = document.createElement('div');
+  lbTitle.className = 'results-section-title';
+  lbTitle.textContent = 'Leaderboard';
+  div.appendChild(lbTitle);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'leaderboard-wrap';
+  const scrollWrap = document.createElement('div');
+  scrollWrap.className = 'leaderboard-scroll';
+
+  const table = document.createElement('table');
+  table.className = 'leaderboard';
+
+  const colLabels = {
+    winner: 'Winner', runnerup: 'Runner-up', boot: 'Boot', glove: 'Glove',
+    ball: 'Ball', young: 'Young', goals: 'Goals', score: 'Score',
+  };
+
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr>
+    <th>#</th>
+    <th>Name</th>
+    <th>Pts</th>
+    ${SCORED_KEYS.map(k => `<th>${colLabels[k]}</th>`).join('')}
+  </tr>`;
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  let rank = 0;
+  let prevScore = null;
+  LEADERBOARD.forEach((entry, i) => {
+    if (entry.total !== prevScore) rank = i + 1;
+    prevScore = entry.total;
+    const tr = document.createElement('tr');
+    if (rank === 1) tr.className = 'winner-row';
+    tr.innerHTML = `
+      <td class="lb-rank${rank === 1 ? ' gold' : ''}">${rank === 1 ? '🏆' : rank}</td>
+      <td class="lb-name">${entry.person.name}</td>
+      <td class="lb-score">${entry.total}</td>
+      ${SCORED_KEYS.map(k => `<td class="lb-cell ${entry.hits[k] ? 'hit' : 'miss'}">${entry.hits[k] ? '✓' : '·'}</td>`).join('')}
+    `;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  scrollWrap.appendChild(table);
+  wrap.appendChild(scrollWrap);
+  div.appendChild(wrap);
+
+  const legend = document.createElement('div');
+  legend.className = 'results-legend';
+  const topScore = LEADERBOARD[0].total;
+  const winners = LEADERBOARD.filter(e => e.total === topScore).map(e => e.person.name);
+  legend.textContent = winners.length > 1
+    ? `🏆 Tied for the win with ${topScore} points: ${winners.join(', ')}`
+    : `🏆 Winner: ${winners[0]} with ${topScore} points`;
+  div.appendChild(legend);
+
+  return div;
+}
+
 const summaryTabsEl = document.getElementById('tabs-summary');
 const peopleTabsEl = document.getElementById('tabs-people');
 const panelsEl = document.getElementById('panels');
@@ -522,16 +807,26 @@ function tabLabel(name) {
   return first;
 }
 
+// Results tab (added first so it's front-and-centre now the tournament's done)
+const resultsTab = document.createElement('div');
+resultsTab.className = 'tab results-tab';
+resultsTab.id = 'tab-results';
+resultsTab.textContent = '🏆 Results';
+resultsTab.onclick = () => setActive('results');
+summaryTabsEl.appendChild(resultsTab);
+
+const resultsPanel = buildResultsPanel();
+panelsEl.appendChild(resultsPanel);
+
 // Summary tab
 const summaryTab = document.createElement('div');
-summaryTab.className = 'tab summary-tab active';
+summaryTab.className = 'tab summary-tab';
 summaryTab.id = 'tab-summary';
 summaryTab.textContent = 'Summary';
 summaryTab.onclick = () => setActive('summary');
 summaryTabsEl.appendChild(summaryTab);
 
 const summaryPanel = buildSummaryPanel();
-summaryPanel.classList.add('active');
 panelsEl.appendChild(summaryPanel);
 summaryPanel.appendChild(buildGoalsScale());
 
@@ -545,6 +840,9 @@ people.forEach((person, i) => {
   peopleTabsEl.appendChild(tab);
   panelsEl.appendChild(buildPersonPanel(person, i));
 });
+
+// Open on Results now that the tournament has finished
+setActive('results');
 </script>
 </body>
 </html>
