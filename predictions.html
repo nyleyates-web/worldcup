@@ -269,6 +269,8 @@
     border-left: 3px solid #059669;
     border-radius: 14px;
     padding: 14px 16px;
+    position: relative;
+    cursor: default;
   }
   .actual-card .a-label {
     font-size: 10px;
@@ -298,6 +300,48 @@
     color: #9ca3af;
     margin-top: 4px;
   }
+  .actual-card .a-hint {
+    font-size: 10px;
+    color: #a7f3d0;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .a-tooltip {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 11px;
+    line-height: 1.5;
+    padding: 8px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 20;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .a-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .a-tooltip .tt-title {
+    font-weight: 700;
+    color: #6ee7b7;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 9px;
+    margin-bottom: 4px;
+  }
+  .a-tooltip .tt-name { color: #fff; }
+  .a-tooltip .tt-none { color: #9ca3af; font-style: italic; }
+  .actual-card:hover .a-tooltip { display: block; }
 
   .leaderboard-wrap {
     background: #fff;
@@ -709,6 +753,16 @@ function buildResultsPanel() {
   ACTUAL_DISPLAY.forEach(q => {
     const val = String(ACTUAL_RESULTS[q.key]);
     const flagCode = q.isCountry === null ? null : getFlag(val, q.isCountry);
+
+    // Who got this one right?
+    const correctNames = LEADERBOARD
+      .filter(entry => entry.hits[q.key])
+      .map(entry => entry.person.name);
+
+    const tooltip = correctNames.length
+      ? `<div class="tt-title">Correctly predicted by</div>${correctNames.map(n => `<div class="tt-name">${n}</div>`).join('')}`
+      : `<div class="tt-title">Correctly predicted by</div><div class="tt-none">No one 😬</div>`;
+
     const card = document.createElement('div');
     card.className = 'actual-card';
     card.innerHTML = `
@@ -718,6 +772,8 @@ function buildResultsPanel() {
         <span>${val}</span>
       </div>
       ${q.note ? `<div class="a-note">${q.note}</div>` : ''}
+      <div class="a-hint">${correctNames.length} correct — hover to see who</div>
+      <div class="a-tooltip">${tooltip}</div>
     `;
     actualGrid.appendChild(card);
   });
